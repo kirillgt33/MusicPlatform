@@ -17,3 +17,15 @@ Thumbs.db
 .idea
 
 backend/static/music/*.mp3
+
+# Игнорируем внутренности Terraform (провайдеры, логи, состояние)
+terraform/.terraform/
+terraform/*.exe
+terraform/*.tfstate
+terraform/*.tfstate.backup
+.terraform.lock.hcl
+
+# Игнорируем секреты и переменные окружения
+.env
+*.pem
+*.key

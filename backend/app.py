@@ -16,6 +16,11 @@ def home():
     tracks.sort()
     return render_template('index.html', tracks=tracks)
 
+@app.route('/health')
+def health_check():
+    # Здесь можно добавить проверку доступности диска или базы, если она появится
+    return {"status": "healthy"}, 200
+
 # Новый маршрут, который вытаскивает картинку из MP3
 @app.route('/cover/<track_name>')
 def get_cover(track_name):

@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  web:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    expose:
+      - "5000"
+    volumes:
+      - /var/www/music_app/tracks:/app/static/music
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s      # Как часто проверять
+      timeout: 10s       # Сколько ждать ответа
+      retries: 3         # Количество неудачных попыток до статуса "unhealthy"
+      start_period: 10s  # Время на прогрев приложения при старте
+    restart: always
+
+  nginx:
+    image: nginx:stable-alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./backend/static:/app/static
+      - /var/www/music_app/tracks:/app/static/music
+    depends_on:
+      web:
+        condition: service_healthy  # Ждем, пока Flask пройдет хелсчек
+    restart: always

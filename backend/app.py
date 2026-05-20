@@ -3,17 +3,28 @@ import io
 from flask import Flask, render_template, send_file, abort
 from mutagen.mp3 import MP3
 from mutagen.id3 import ID3, APIC
+from functools import lru_cache
 
 app = Flask(__name__)
 MUSIC_DIR = os.path.join(app.static_folder, 'music')
 
-@app.route('/')
-def home():
+@lru_cache(maxsize=1)
+def get_cached_tracks():
+    # Если папки нет — создаем (хотя на проде она уже примонтирована)
     if not os.path.exists(MUSIC_DIR):
         os.makedirs(MUSIC_DIR)
         
-    tracks = [f for f in os.listdir(MUSIC_DIR) if f.endswith('.mp3')]
-    tracks.sort()
+    # Твоя логика сканирования файлов
+    tracks_list = [f for f in os.listdir(MUSIC_DIR) if f.endswith('.mp3')]
+    tracks_list.sort()
+    
+    # Возвращаем готовый отсортированный список треков
+    return tracks_list
+
+@app.route('/')
+def home():
+    # Flask больше не трогает диск! Он мгновенно забирает список из оперативной памяти
+    tracks = get_cached_tracks()
     return render_template('index.html', tracks=tracks)
 
 @app.route('/health')

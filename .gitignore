@@ -25,7 +25,5 @@ terraform/*.tfstate
 terraform/*.tfstate.backup
 .terraform.lock.hcl
 
-# Игнорируем секреты и переменные окружения
-.env
 *.pem
 *.key

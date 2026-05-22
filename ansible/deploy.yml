@@ -50,4 +50,30 @@
         owner: ubuntu
         group: ubuntu
 
-    # Здесь в будущем будет задача для копирования Docker-контейнера или git clone сайта
+    - name: Copy docker-compose.yml to server
+      copy:
+        src: ./docker-compose.yml
+        dest: /var/www/music_app/docker-compose.yml
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    # Создаем файл .env на сервере и пишем туда логин
+    - name: Create .env file for Docker Compose
+      lineinfile:
+        path: /var/www/music_app/.env
+        line: "DOCKER_USERNAME={{ docker_hub_username }}"
+        create: yes
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600' # Права только для чтения владельцем
+
+    - name: Pull latest images from Docker Hub
+      shell:
+        cmd: docker compose pull
+        chdir: /var/www/music_app
+
+    - name: Restart application container
+      shell:
+        cmd: docker compose up -d
+        chdir: /var/www/music_app

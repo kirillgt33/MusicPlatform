@@ -2,9 +2,8 @@ version: '3.8'
 
 services:
   web:
-    build:
-      context: ${DOCKER_USERNAME}/vxga-music:latest
-      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/vxga-music:latest
+    
     expose:
       - "5000"
     volumes:

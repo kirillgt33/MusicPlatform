@@ -1,6 +1,6 @@
 ---
 - name: Deploy Music Portfolio Application
-  hosts: music_servers
+  hosts: all
   become: yes  # Выполнять команды от имени root (sudo)
 
   tasks:
@@ -52,8 +52,8 @@
 
     - name: Copy docker-compose.yml to server
       copy:
-        src: ./docker-compose.yml
-        dest: /var/www/music_app/docker-compose.yml
+        src: ../docker-compose.yml
+        dest: /home/ubuntu/MusicPlatform/docker-compose.yml
         owner: ubuntu
         group: ubuntu
         mode: '0644'
@@ -61,7 +61,7 @@
     # Создаем файл .env на сервере и пишем туда логин
     - name: Create .env file for Docker Compose
       lineinfile:
-        path: /var/www/music_app/.env
+        path: /home/ubuntu/MusicPlatform/.env
         line: "DOCKER_USERNAME={{ docker_hub_username }}"
         create: yes
         owner: ubuntu
@@ -71,9 +71,9 @@
     - name: Pull latest images from Docker Hub
       shell:
         cmd: docker compose pull
-        chdir: /var/www/music_app
+        chdir: /home/ubuntu/MusicPlatform
 
     - name: Restart application container
       shell:
         cmd: docker compose up -d --force-recreate
-        chdir: /var/www/music_app
+        chdir: /home/ubuntu/MusicPlatform

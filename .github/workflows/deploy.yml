@@ -30,18 +30,16 @@ jobs:
           
           tags: ${{ secrets.DOCKER_USERNAME }}/vxga-music:latest
 
-      # 4. Запускаем Ansible-плейбук для деплоя на реальный сервер
+      # 4. Запускаем Ansible-плейбук
       - name: Run Ansible Playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          # Путь к плейбуку в репозитории
           playbook: ansible/deploy.yml
-          # inventory-файл с IP-адресом сервера
-          inventory: ansible/inventory.ini
-          # SSH-ключ для подключения к серверу
+          # Передаем IP адрес
+          inventory: ${{ secrets.SERVER_IP }}
           key: ${{ secrets.SSH_KEY }}
+          # Передаем всё, включая переменные, через стандартные опции ansible-playbook
           options: |
             --user ubuntu
             --become
-          vars: |
-            docker_hub_username: ${{ secrets.DOCKER_USERNAME }}
+            --extra-vars "docker_hub_username=${{ secrets.DOCKER_USERNAME }}"

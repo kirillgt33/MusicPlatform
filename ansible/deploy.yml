@@ -75,5 +75,5 @@
 
     - name: Restart application container
       shell:
-        cmd: docker compose up -d
+        cmd: docker compose up -d --force-recreate
         chdir: /var/www/music_app

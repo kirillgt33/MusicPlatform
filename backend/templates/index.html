@@ -44,14 +44,46 @@
     </div>
 
     <script>
-        document.addEventListener('play', function(e){
-            const audios = document.getElementsByTagName('audio');
-            for(let i = 0, len = audios.length; i < len; i++){
-                if(audios[i] != e.target){
-                    audios[i].pause();
+document.addEventListener('DOMContentLoaded', () => {
+    // === ЛОГИКА ОСТАНОВКИ ДРУГИХ ТРЕКОВ  ===
+    document.addEventListener('play', function(e) {
+        const audios = document.getElementsByTagName('audio');
+        for (let i = 0, len = audios.length; i < len; i++) {
+            if (audios[i] !== e.target) {
+                audios[i].pause();
+            }
+        }
+    }, true);
+
+    // === ЛОГИКА АВТОПЕРЕКЛЮЧЕНИЯ НА СЛЕДУЮЩИЙ ТРЕК ===
+    const audioPlayers = document.querySelectorAll('.track-card audio');
+
+    audioPlayers.forEach((audio) => {
+        audio.addEventListener('ended', (event) => {
+            // Находим карточку текущего трека
+            const currentCard = event.target.closest('.track-card');
+            
+            if (currentCard) {
+                // Ищем следующую карточку в списке
+                const nextCard = currentCard.nextElementSibling;
+                
+                // Проверяем, что это карточка и она существует
+                if (nextCard && nextCard.classList.contains('track-card')) {
+                    const nextAudio = nextCard.querySelector('audio');
+                    
+                    if (nextAudio) {
+                        // Запускаем следующий трек
+                        nextAudio.play().catch(error => {
+                            console.log("Автовоспроизведение прервано браузером:", error);
+                        });
+                    }
+                } else {
+                    console.log("Плейлист окончен.");
                 }
             }
-        }, true);
-    </script>
+        });
+    });
+});
+</script>
 </body>
 </html>

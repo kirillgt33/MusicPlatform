@@ -11,7 +11,7 @@
 
     <div class="container">
         <header>
-            <h1>VXGA.AUDIO</h1>
+            <h1>VXGA AUDIO</h1>
             <p class="subtitle">RMX Archive</p>
             <div class="line"></div>
         </header>
@@ -27,9 +27,17 @@
                             <span class="track-number">0{{ loop.index }}</span>
                             <span class="track-title">{{ track.replace('.mp3', '').replace('_', ' ').upper() }}</span>
                         </div>
-                        <audio controls controlsList="nodownload">
+                        
+                        <audio class="audio-element">
                             <source src="{{ url_for('static', filename='music/' + track) }}" type="audio/mpeg">
                         </audio>
+
+                        <div class="custom-player">
+                            <button class="play-btn">▶</button>
+                            <span class="current-time">0:00</span>
+                            <input type="range" class="progress-bar" min="0" max="100" value="0">
+                            <span class="duration">0:00</span>
+                        </div>
                     </div>
                 </div>
                 {% endfor %}
@@ -45,41 +53,90 @@
 
     <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // === ЛОГИКА ОСТАНОВКИ ДРУГИХ ТРЕКОВ  ===
-    document.addEventListener('play', function(e) {
-        const audios = document.getElementsByTagName('audio');
-        for (let i = 0, len = audios.length; i < len; i++) {
-            if (audios[i] !== e.target) {
-                audios[i].pause();
-            }
-        }
-    }, true);
+    const cards = document.querySelectorAll('.track-card');
 
-    // === ЛОГИКА АВТОПЕРЕКЛЮЧЕНИЯ НА СЛЕДУЮЩИЙ ТРЕК ===
-    const audioPlayers = document.querySelectorAll('.track-card audio');
+    // Форматирование секунд в 0:00
+    function formatTime(seconds) {
+        if (isNaN(seconds)) return "0:00";
+        const min = Math.floor(seconds / 60);
+        const sec = Math.floor(seconds % 60);
+        return `${min}:${sec < 10 ? '0' : ''}${sec}`;
+    }
 
-    audioPlayers.forEach((audio) => {
-        audio.addEventListener('ended', (event) => {
-            // Находим карточку текущего трека
-            const currentCard = event.target.closest('.track-card');
-            
-            if (currentCard) {
-                // Ищем следующую карточку в списке
-                const nextCard = currentCard.nextElementSibling;
-                
-                // Проверяем, что это карточка и она существует
-                if (nextCard && nextCard.classList.contains('track-card')) {
-                    const nextAudio = nextCard.querySelector('audio');
-                    
-                    if (nextAudio) {
-                        // Запускаем следующий трек
-                        nextAudio.play().catch(error => {
-                            console.log("Автовоспроизведение прервано браузером:", error);
-                        });
+    cards.forEach((card) => {
+        const audio = card.querySelector('.audio-element');
+        const playBtn = card.querySelector('.play-btn');
+        const progressBar = card.querySelector('.progress-bar');
+        const currentTimeEl = card.querySelector('.current-time');
+        const durationEl = card.querySelector('.duration');
+
+        // 1. Клик по кнопке Play/Pause
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                // Глушим все остальные плееры на странице
+                document.querySelectorAll('.audio-element').forEach((otherAudio) => {
+                    if (otherAudio !== audio) {
+                        otherAudio.pause();
+                        const otherCard = otherAudio.closest('.track-card');
+                        if (otherCard) {
+                            otherCard.querySelector('.play-btn').textContent = '▶';
+                        }
                     }
-                } else {
-                    console.log("Плейлист окончен.");
+                });
+
+                audio.play().catch(err => console.log("Ошибка воспроизведения:", err));
+                playBtn.textContent = '⏸';
+            } else {
+                audio.pause();
+                playBtn.textContent = '▶';
+            }
+        });
+
+        // 2. Обновление прогресс-бара и текстового таймера
+        audio.addEventListener('timeupdate', () => {
+            if (audio.duration) {
+                const progress = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = progress;
+                currentTimeEl.textContent = formatTime(audio.currentTime);
+            }
+        });
+
+        // 3. Подгрузка длины трека при чтении метаданных файлов
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        // Защита на случай, если трек уже закеширован браузером
+        if (audio.readyState >= 1) {
+            durationEl.textContent = formatTime(audio.duration);
+        }
+
+        // 4. Ручная перемотка ползунком (клик или перетаскивание)
+        progressBar.addEventListener('input', () => {
+            if (audio.duration) {
+                const newTime = (progressBar.value / 100) * audio.duration;
+                audio.currentTime = newTime;
+            }
+        });
+
+        // 5. Автопереключение на следующий трек в списке
+        audio.addEventListener('ended', () => {
+            playBtn.textContent = '▶'; // Сбрасываем кнопку текущего трека
+            
+            const nextCard = card.nextElementSibling;
+            if (nextCard && nextCard.classList.contains('track-card')) {
+                const nextAudio = nextCard.querySelector('.audio-element');
+                const nextPlayBtn = nextCard.querySelector('.play-btn');
+                
+                if (nextAudio && nextPlayBtn) {
+                    nextPlayBtn.textContent = '⏸';
+                    nextAudio.play().catch(error => {
+                        console.log("Автовоспроизведение прервано браузером:", error);
+                        nextPlayBtn.textContent = '▶';
+                    });
                 }
+            } else {
+                console.log("Плейлист окончен.");
             }
         });
     });

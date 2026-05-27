@@ -57,7 +57,7 @@ header h1 {
     padding: 15px;
     border-radius: 0px;
     display: flex;
-    align-items: center; /* Выравниваем по центру по вертикали */
+    align-items: center;
     gap: 20px;
     transition: border-color 0.3s ease;
 }
@@ -66,19 +66,15 @@ header h1 {
     border-color: #ffffff;
 }
 
-/* Стили для обложки */
 .track-cover {
     width: 70px;
     height: 70px;
     object-fit: cover;
     border: 1px solid #222222;
-    
-    /* МАГИЯ МИНИМАЛИЗМА: делаем картинку полностью черно-белой и контрастной */
     filter: grayscale(100%) contrast(120%);
     transition: filter 0.3s ease;
 }
 
-/* При наведении картинка может чуть-чуть «оживать» (по желанию, можно убрать) */
 .track-card:hover .track-cover {
     filter: grayscale(100%) contrast(140%);
 }
@@ -87,7 +83,7 @@ header h1 {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    flex-grow: 1; /* Растягивает блок с плеером на всю оставшуюся ширину */
+    flex-grow: 1;
 }
 
 .track-info {
@@ -108,11 +104,6 @@ header h1 {
     letter-spacing: 0.5px;
 }
 
-audio {
-    width: 100%;
-    filter: invert(90%) hue-rotate(180deg); /* Элегантный хак: делает стандартный плеер темным */
-}
-
 .no-tracks {
     color: #666666;
     text-align: center;
@@ -125,4 +116,70 @@ footer {
     color: #444444;
     text-transform: uppercase;
     letter-spacing: 1px;
+}
+
+/* --- КАСТОМНЫЙ ПЛЕЕР (БРУТАЛИЗМ) --- */
+.custom-player {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    background-color: #121212;
+    margin-top: 5px;
+}
+
+.play-btn {
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    cursor: pointer;
+    min-width: 20px;
+    text-align: left;
+    outline: none;
+    transition: color 0.2s ease;
+}
+
+.play-btn:hover {
+    color: #888888;
+}
+
+.current-time, .duration {
+    font-size: 0.8rem;
+    color: #444444;
+    min-width: 35px;
+}
+
+/* Стилизация дорожки ползунка */
+input[type="range"].progress-bar {
+    flex-grow: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    background: #222222;
+    height: 2px;
+    outline: none;
+    cursor: pointer;
+}
+
+/* Бегунок для Chrome, WebKit, Edge, Vivaldi */
+input[type="range"].progress-bar::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 6px;
+    height: 12px;
+    background: #ffffff;
+    cursor: pointer;
+    border: none;
+    border-radius: 0px;
+}
+
+/* Бегунок для Firefox */
+input[type="range"].progress-bar::-moz-range-thumb {
+    width: 6px;
+    height: 12px;
+    background: #ffffff;
+    cursor: pointer;
+    border: none;
+    border-radius: 0px;
 }

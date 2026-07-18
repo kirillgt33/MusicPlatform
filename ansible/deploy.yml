@@ -36,44 +36,69 @@
         name: docker
         state: present
 
-    - name: Add ubuntu user to docker group
+    - name: Add current deployment user to docker group
       user:
-        name: ubuntu
+        name: "{{ ansible_user }}"
         groups: docker
         append: yes
 
     - name: Create app directory for music files
       file:
-        path: /var/www/music_app/tracks
+        path: "/home/{{ ansible_user }}/MusicPlatform/tracks"
         state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: '0755'
-        owner: ubuntu
-        group: ubuntu
+
+    # Создаем домашнюю папку проекта, если её ещё нет
+    - name: Ensure project directory exists
+      file:
+        path: "/home/{{ ansible_user }}/MusicPlatform"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
 
     - name: Copy docker-compose.yml to server
       copy:
         src: ../docker-compose.yml
-        dest: /home/ubuntu/MusicPlatform/docker-compose.yml
-        owner: ubuntu
-        group: ubuntu
+        dest: "/home/{{ ansible_user }}/MusicPlatform/docker-compose.yml"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0644'
+    
+    - name: Ensure nginx directory exists on server
+      file:
+        path: "/home/{{ ansible_user }}/MusicPlatform/nginx"
+        state: directory
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0755'
+
+    - name: Copy nginx.conf to server
+      copy:
+        src: ../nginx/nginx.conf
+        dest: "/home/{{ ansible_user }}/MusicPlatform/nginx/nginx.conf"
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
         mode: '0644'
 
-    # Создаем файл .env на сервере и пишем туда логин
+    # Создаем файл .env на сервере
     - name: Create .env file for Docker Compose
       lineinfile:
-        path: /home/ubuntu/MusicPlatform/.env
+        path: "/home/{{ ansible_user }}/MusicPlatform/.env"
         line: "DOCKER_USERNAME={{ docker_hub_username }}"
         create: yes
-        owner: ubuntu
-        group: ubuntu
-        mode: '0600' # Права только для чтения владельцем
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: '0600'
 
     - name: Pull latest images from Docker Hub
       shell:
         cmd: docker compose pull
-        chdir: /home/ubuntu/MusicPlatform
+        chdir: "/home/{{ ansible_user }}/MusicPlatform"
 
     - name: Restart application container
       shell:
         cmd: docker compose up -d --force-recreate
-        chdir: /home/ubuntu/MusicPlatform
+        chdir: "/home/{{ ansible_user }}/MusicPlatform"

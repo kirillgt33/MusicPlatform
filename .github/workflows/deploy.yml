@@ -39,11 +39,10 @@ jobs:
           ANSIBLE_HOST_KEY_CHECKING: 'false' # Отключаем проверку хоста, чтобы экшен не зависал
         with:
           playbook: ansible/deploy.yml
-          # Указываем путь к файлу инвентаря в репозитории
-          inventory: ansible/inventory.ini 
           # Передаем приватный SSH-ключ
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          key: ${{ secrets.SSH_KEY }}
           # Передаем дополнительные опции (убрали жестко зашитого юзера ubuntu)
           options: |
+            -i ansible/inventory.ini
             --become
             --extra-vars "docker_hub_username=${{ secrets.DOCKER_USERNAME }}"

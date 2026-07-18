@@ -27,19 +27,23 @@ jobs:
           # Указываем, где лежит Dockerfile
           context: ./backend
           push: true
-          
           tags: ${{ secrets.DOCKER_USERNAME }}/vxga-music:latest
 
       # 4. Запускаем Ansible-плейбук
       - name: Run Ansible Playbook
         uses: dawidd6/action-ansible-playbook@v2
+        # Передаем переменные окружения, которые Ansible считает внутри инвентаря
+        env:
+          DEPLOY_HOST: ${{ secrets.SERVER_IP }}
+          DEPLOY_USER: ${{ secrets.SERVER_USER }}
+          ANSIBLE_HOST_KEY_CHECKING: 'false' # Отключаем проверку хоста, чтобы экшен не зависал
         with:
           playbook: ansible/deploy.yml
-          # Передаем IP адрес
-          inventory: ${{ secrets.SERVER_IP }}
-          key: ${{ secrets.SSH_KEY }}
-          # Передаем всё, включая переменные, через стандартные опции ansible-playbook
+          # Указываем путь к файлу инвентаря в репозитории
+          inventory: ansible/inventory.ini 
+          # Передаем приватный SSH-ключ
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Передаем дополнительные опции (убрали жестко зашитого юзера ubuntu)
           options: |
-            --user ubuntu
             --become
             --extra-vars "docker_hub_username=${{ secrets.DOCKER_USERNAME }}"
